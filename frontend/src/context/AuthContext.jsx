@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 // Navigasi
 import { useNavigate } from "react-router-dom"
 // Jwt
@@ -7,6 +7,16 @@ import { jwtDecode } from 'jwt-decode'
 import { login, register } from "../services/auth"
 
 export const AuthContext = createContext()
+
+const decodeUser = (jwt) => {
+  try {
+    const { id, email, fullname } = jwtDecode(jwt)
+    return { id, email, fullname }
+  } catch (err) {
+    console.error('Invalid token: ', err)
+    return null
+  }
+}
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -18,12 +28,8 @@ const AuthProvider = ({ children }) => {
   const saveToken = (jwt) => {
     localStorage.setItem('userToken', jwt)
     setToken(jwt)
-    const decodeToken = jwtDecode(jwt)
-    setUser({
-      id: decodeToken.id,
-      email: decodeToken.email,
-      fullname: decodeToken.fullname
-    })
+    const decoded = decodeUser(jwt)
+    if(decoded) setUser(decoded);
   }
 
   const loginFunc = async (dataUser) => {
@@ -31,7 +37,11 @@ const AuthProvider = ({ children }) => {
 
     try {
       const res = await login(dataUser)
-      if (res.userToken) return saveToken(res.userToken);
+
+      if(res.userToken) {
+        saveToken(res.userToken)
+        return { success: true, message: res.message }
+      }
 
       return res
     } catch (err) {
@@ -45,9 +55,7 @@ const AuthProvider = ({ children }) => {
     setLoading(true)
 
     try {
-      const res = await register(dataUser)
-
-      return res
+      return await register(dataUser)
     } catch (err) {
       throw err
     } finally {
@@ -64,15 +72,11 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      try {
-        const decodeToken = jwtDecode(token)
-        setUser({
-          id: decodeToken.id,
-          email: decodeToken.email,
-          fullname: decodeToken.fullname
-        })
-      } catch (err) {
-        console.error('Invalid token: ', err)
+      const decoded = decodeUser(token)
+
+      if(decoded) {
+        setUser(decoded)
+      } else {
         logoutFunc()
       }
     }
@@ -86,5 +90,7 @@ const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   )
 }
+
+export const useAuth = () => useContext(AuthContext)
 
 export default AuthProvider

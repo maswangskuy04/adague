@@ -1,19 +1,23 @@
 // Navigasi
 import { Route, Routes } from 'react-router-dom'
 // Pages
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
 import Home from './pages/user/Home'
 import Dashboard from './pages/admin/Dashboard'
 import Unauthorized from './pages/UnauthorizedPage'
+import LoginMethod from './pages/auth/LoginMethod'
+import LoginEmail from './pages/auth/method/LoginEmail'
+import LoginPhone from './pages/auth/method/LoginPhone'
 // Routes
 import ProtectedRoute from './routes/ProtectedRoute'
 
 function App() {
   return (
     <Routes>
-      <Route path='/login' element={<LoginPage />}></Route>
-      <Route path='/register' element={<RegisterPage />}></Route>
+      {/* Auth */}
+      <Route path='/login' element={<LoginMethod />} />
+      <Route path='/signup' element={<LoginMethod />} />
+      <Route path='/login/email' element={<LoginEmail />} />
+      <Route path='/login/phone' element={<LoginPhone />} />
 
       {/* User */}
       <Route element={<ProtectedRoute roles={['user']} />}>
