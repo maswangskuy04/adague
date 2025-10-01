@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 // Jwt
 import { jwtDecode } from 'jwt-decode'
 // Service
-import { login, register } from "../services/auth"
+import { reqOtpEmail, veryfOtpEmail } from "../services/auth"
 
 export const AuthContext = createContext()
 
@@ -32,16 +32,11 @@ const AuthProvider = ({ children }) => {
     if(decoded) setUser(decoded);
   }
 
-  const loginFunc = async (dataUser) => {
+  const requestOtpEmail = async (email) => {
     setLoading(true)
 
     try {
-      const res = await login(dataUser)
-
-      if(res.userToken) {
-        saveToken(res.userToken)
-        return { success: true, message: res.message }
-      }
+      const res = await reqOtpEmail({ email })
 
       return res
     } catch (err) {
@@ -51,11 +46,13 @@ const AuthProvider = ({ children }) => {
     }
   }
 
-  const registerFunc = async (dataUser) => {
+  const verifyOtpEmail = async ({ email, otp }) => {
     setLoading(true)
 
     try {
-      return await register(dataUser)
+      const res = await veryfOtpEmail({ email, otp })
+
+      return res
     } catch (err) {
       throw err
     } finally {
@@ -85,7 +82,7 @@ const AuthProvider = ({ children }) => {
   }, [token])
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, initializing, loginFunc, registerFunc, logoutFunc }}>
+    <AuthContext.Provider value={{ user, token, loading, initializing, requestOtpEmail, verifyOtpEmail, logoutFunc }}>
       {children}
     </AuthContext.Provider>
   )

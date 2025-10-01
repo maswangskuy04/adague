@@ -1,13 +1,13 @@
 import API from "./api"
 
-export const login = async (dataUser) => {
-    const res = await API.post('/auth/login', dataUser)
+export const reqOtpEmail = async (email) => {
+    const res = await API.post('/auth/request-otp', email)
 
     return res.data
 }
 
-export const register = async (dataUser) => {
-    const res = await API.post('/auth/register', dataUser)
-
+export const veryfOtpEmail = async ({email, otp}) => {
+    const res = await API.post('/auth/verify-otp', { email, otp })
+    
     return res.data
 }
