@@ -10,11 +10,11 @@ const User = sequelize.define('User', {
     },
     fullname: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     },
     username: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true
     },
     email: {
@@ -25,9 +25,19 @@ const User = sequelize.define('User', {
             isEmail: true
         }
     },
-    password: {
+    phone: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true,
+        unique: true
+    },
+    // untuk OTP auth
+    otp: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    otpExpires: {
+        type: DataTypes.DATE,
+        allowNull: true
     },
     // profil tambahan
     bio: {
@@ -40,13 +50,13 @@ const User = sequelize.define('User', {
     },
     // status percakapan
     chatStatus: {
-        type: DataTypes.ENUM('siap_ngobrol', 'sedang_ngobrol'),
-        defaultValue: 'siap_ngobrol'
+        type: DataTypes.ENUM('ready_to_chat', 'chatting'),
+        defaultValue: 'ready_to_chat'
     },
     // status akun
     accountStatus: {
-        type: DataTypes.ENUM('aktif', 'nonaktif', 'ditangguhkan', 'diblokir'),
-        defaultValue: 'aktif'
+        type: DataTypes.ENUM('active', 'inactive', 'suspended', 'banned'),
+        defaultValue: 'active'
     },
     isAnonim: {
         type: DataTypes.BOOLEAN,

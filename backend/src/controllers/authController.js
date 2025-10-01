@@ -1,63 +1,94 @@
 const User = require('../models/User')
-const bcrypt = require('bcrypt')
 const generateToken = require('../helpers/token')
+const { sendOtpToEmail } = require('../services/otpService')
+// const { sendSmsOtp } = require('../services/smsService')
 
-exports.login = async (req, res) => {
-    const { email, password } = req.body
+function generateOtp() {
+    return Math.floor(100000 + Math.random() * 900000).toString() 
+}
 
-    if(!email || !password) return res.status(400).json({ success: false, message: 'Email atau Password tidak boleh kosong' });
-
+exports.requestOtp = async (req, res) => {
     try {
-        const user = await User.findOne({ where: { email } })
+        const { email, phone } = req.body
+
+        if (!email && !phone) return res.status(400).json({ success: false, message: 'Kolom tidak boleh kosong' });
+
+        const otp = generateOtp()
+        const otpExpires = new Date(Date.now() + 5 * 60 * 1000)
+
+        // cari user kalau sudah ada
+        let user = null
+
+        if (email) {
+            user = await User.findOne({ where: { email } })
+        }
+
+        if (!user && phone) {
+            user = await User.findOne({ where: { phone } })
+        }
+
+        // kalau belum ada user, bikin baru hanya simpan email dan no telpon
+        if (!user) {
+            user = await User.create({ email, phone, otp, otpExpires })
+        } else {
+            await user.update({ otp, otpExpires })
+        }
+
+        // kirim otp
+        if (email) await sendOtpToEmail(email, otp);
         
-        if(!user) return res.status(404).json({ success: false, message: 'Email belum terdaftar' });
-
-        const isPasswordValid = await bcrypt.compare(password, user.password)
-
-        if(!isPasswordValid) return res.status(400).json({ success: false, message: 'Password salah' });
-
-        const token = generateToken(user)
-
-        const { password: _, ...dataUser } = user.toJSON()
-
-        return res.status(200).json({ success: true, message: 'Berhasil masuk', token, user: dataUser })
+        return res.json({ success: true, message: 'OTP terkirim' })
     } catch (err) {
-        console.error('Error Login: ', err)
-        return res.status(500).json({ success: false, message: 'Server Error' })
+        console.error('Request otp error: ', err)
+        return res.status(500).json({ success: false, message: 'Server error' })
     }
 }
 
-exports.register = async (req, res) => {
-    const { fullname, username, email, password } = req.body
-
-    if(!username || !fullname || !email || !password) return res.status(400).json({ success: false, message: 'Semua field wajib diisi' });
-
+exports.verifyOtp = async (req, res) => {
     try {
-        const user = await User.findOne({ where: { email } })
+        const { email, phone, otp } = req.body
 
-        if(user) return res.status(400).json({ success: false, message: 'Email sudah digunakan' });
+        if ((!email && !phone) || !otp) {
+            return res.status(400).json({ success: false, message: 'Kolom tidak boleh kosong' })
+        }
 
-        const hashPassword = await bcrypt.hash(password, 10)
+        let user = null
 
-        const create = await User.create({
-            username,
-            fullname,
-            email,
-            password: hashPassword,
-        })
+        if (email) {
+            user = await User.findOne({ where: { email } })
+        }
 
-        return res.status(201).json({
+        if (!user && phone) {
+            user = await User.findOne({ where: { phone } })
+        }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' })
+        }
+
+        // cek otp valid / tida
+        if (user.otp !== otp || new Date() > user.otpExpires) {
+            return res.status(400).json({ success: false, message: 'OTP tidak valid atau sudah kadaluarsa' })
+        }
+
+        // hapus otp setelah berhasil
+        await user.update({ otp: null, otpExpires: null })
+
+        // generate token JWT
+        const token = generateToken({ id: user.id })
+
+        return res.json({
             success: true,
-            message: 'Berhasil mendaftar',
+            message: 'OTP berhasil diverifikasi',
+            token,
             user: {
-                id: create.id,
-                username: create.username,
-                fullname: create.fullname,
-                email: create.email
+                id: user.id,
+                email: user.email,
+                phone: user.phone
             }
         })
     } catch (err) {
-        console.error('Error Register: ', err)
-        return res.status(500).json({ success: false, message: 'Server Error' })
+        console.error('Verify otp error: ', err)
+        return res.status(500).json({ success: false, message: 'Server error' })
     }
 }
