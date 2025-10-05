@@ -30,6 +30,10 @@ const User = sequelize.define('User', {
         allowNull: true,
         unique: true
     },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     // untuk OTP auth
     otp: {
         type: DataTypes.STRING,

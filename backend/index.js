@@ -20,7 +20,7 @@ async function StartServer() {
             console.log(`Server berjalan di http://localhost:${process.env.PORT}`)
         })
     } catch (err) {
-        console.log('Koneksi ke database gagal')
+        console.log('Koneksi ke database gagal', err)
         process.exit(1)
     }
 }

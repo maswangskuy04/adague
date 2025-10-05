@@ -1,11 +1,8 @@
 const User = require('../models/User')
 const generateToken = require('../helpers/token')
 const { sendOtpToEmail } = require('../services/otpService')
+const { findUserByEmailOrPhone, createOtpObject } = require('../helpers/auth')
 // const { sendSmsOtp } = require('../services/smsService')
-
-function generateOtp() {
-    return Math.floor(100000 + Math.random() * 900000).toString() 
-}
 
 exports.requestOtp = async (req, res) => {
     try {
@@ -13,19 +10,16 @@ exports.requestOtp = async (req, res) => {
 
         if (!email && !phone) return res.status(400).json({ success: false, message: 'Kolom tidak boleh kosong' });
 
-        const otp = generateOtp()
-        const otpExpires = new Date(Date.now() + 5 * 60 * 1000)
-
         // cari user kalau sudah ada
-        let user = null
+        let user = await findUserByEmailOrPhone(email, phone)
 
-        if (email) {
-            user = await User.findOne({ where: { email } })
+        // kalau user sudah ada dan punya password, abaikan otp
+        if (user && user.password) {
+            return res.json({ success: false, requiredPassword: true })
         }
 
-        if (!user && phone) {
-            user = await User.findOne({ where: { phone } })
-        }
+        // generate OTP
+        const { otp, otpExpires } = createOtpObject()
 
         // kalau belum ada user, bikin baru hanya simpan email dan no telpon
         if (!user) {
@@ -52,27 +46,17 @@ exports.verifyOtp = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Kolom tidak boleh kosong' })
         }
 
-        let user = null
+        let user = await findUserByEmailOrPhone(email, phone)
 
-        if (email) {
-            user = await User.findOne({ where: { email } })
-        }
+        if (!user) return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' });
 
-        if (!user && phone) {
-            user = await User.findOne({ where: { phone } })
-        }
-
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' })
-        }
-
-        // cek otp valid / tida
+        // validasi OTP
         if (user.otp !== otp || new Date() > user.otpExpires) {
             return res.status(400).json({ success: false, message: 'OTP tidak valid atau sudah kadaluarsa' })
         }
 
-        // hapus otp setelah berhasil
-        await user.update({ otp: null, otpExpires: null })
+        // hapus OTP + verifikasi email
+        await user.update({ otp: null, otpExpires: null, emailVerified: true });
 
         // generate token JWT
         const token = generateToken({ id: user.id })
