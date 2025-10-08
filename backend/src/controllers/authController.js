@@ -59,7 +59,7 @@ exports.verifyOtp = async (req, res) => {
         await user.update({ otp: null, otpExpires: null, emailVerified: true });
 
         // generate token JWT
-        const token = generateToken({ id: user.id })
+        const token = generateToken({ id: user.id, email: user.email, role: user.role })
 
         return res.json({
             success: true,
