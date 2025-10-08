@@ -10,42 +10,46 @@ import { useState } from "react"
 // Hooks
 import { useAuth } from "../../../context/AuthContext"
 import { useAlert } from "../../../context/AlertContext"
+import { useFormValidation } from "../../../hooks/useFormValidation"
 
 function LoginEmail() {
   const { requestOtpEmail, verifyOtpEmail, loading } = useAuth()
+  const { values, errors, handleChange, validateAll } = useFormValidation({ email: '' })
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
   const [showOtpModal, setShowOtpModal] = useState(false)
   const alert = useAlert()
 
-  const onsubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    validateAll()
 
     try {
-      const res = await requestOtpEmail(email)
+      const res = await requestOtpEmail(values.email)
 
       if(res.success) {
+        alert.showAlert(res.message, 'success')
         setShowOtpModal(true)
       } else {
-        alert.error(res.message)
+        alert.showAlert(res.message, 'error')
       }
     } catch (err) {
-      alert.error(err.message)
+      alert.showAlert(err.message, 'error')
       console.error('Error request otp: ', err.message)
     }
   }
 
   const handleVerify = async (otp) => {
     try {
-      const res = await verifyOtpEmail({ email, otp })
+      const res = await verifyOtpEmail({ email: values.email, otp })
   
       if(res.success) {
-        alert.success(res.message)
-        console.log(res)
+        alert.showAlert(res.message, 'success')
       } else {
+        alert.showAlert(res.message, 'error')
         console.error(res.message)
       }
     } catch (err) {
+      alert.showAlert(err.message, 'error')
       console.error(err.message)
     }
   }
@@ -62,17 +66,20 @@ function LoginEmail() {
         >
           <ArrowLeftSquare className="text-white" />
         </motion.button>
-        <form onSubmit={onsubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="block text-sm text-slate-300">Email</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
                 <Mail size={20} className="text-slate-200" />
               </div>
-              <input type="email" id="email" name="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-gray-500/30 border border-gray-500 rounded px-3 py-1.5 pl-10 text-white placeholder:text-gray-400 focus:outline-none focus:border-gray-400" placeholder="Input valid email" />
+              <input type="email" id="email" name="email" value={values.email} onChange={handleChange} disabled={loading} className="w-full bg-gray-500/30 border border-gray-500 rounded px-3 py-1.5 pl-10 text-white placeholder:text-gray-400 focus:outline-none focus:border-gray-400" placeholder="Input valid email" />
             </div>
+            {errors && <p className="text-sm text-red-400">{errors.email}</p>}
           </div>
-          <button className="w-full px-3 py-2 bg-indigo-500 text-slate-50 font-medium rounded-md hover:shadow-lg transition-all duration-300">Continue</button>
+          <button disabled={loading} className={`w-full px-3 py-2 bg-indigo-500 text-slate-50 font-medium rounded-md hover:shadow-lg transition-all duration-300 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+            {loading ? 'Please wait...' : 'Continue'}
+          </button>
         </form>
       </AuthFormWrapper>
 

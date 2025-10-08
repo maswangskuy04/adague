@@ -1,41 +1,48 @@
 // React
 import { useState } from "react"
 
-export function useFormValidation(initialValues, type = 'login') {
+export function useFormValidation(initialValues) {
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
 
-  const validators = {
-    login: (val) => {
-      const errors = {}
-      if(!val.email) errors.email = 'Email wajib diisi'
-      if(!val.password) errors.password = 'Password wajib diisi'
-      return errors
-    },
-    register: (val) => {
-      const errors = {}
-      if(!val.username) errors.username = 'Username wajib diisi'
-      if(!val.fullname) errors.fullname = 'Nama lengkap wajib diisi'
-      if(!val.email) errors.email = 'Email wajib diisi'
-      if(!val.password) errors.password = 'Password wajib diisi'
-      return errors
+  function validateField(name, value) {
+    let message = ''
+
+    if(name === 'email') {
+      if(!value) {
+        message = 'Email tidak boleh kosong'
+      } else if(!value.includes('@')) {
+        message = 'Format email tidak valid'
+      }
     }
+
+    if(name === 'phone') {
+      if(!value) {
+        message = 'Nomor telepon tidak boleh kosong'
+      } else if(value.length < 13) {
+        message = 'Nomor telepon tidak valid'
+      }
+    }
+
+    setErrors((prev) => ({ ...prev, [name]: message }))
   }
 
-  const handleChange = (e) => {
+  function handleChange(e) {
     const { name, value } = e.target
-    setValues((props) => ({ ...props, [name]: value }))
+    setValues((prev) => ({ ...prev, [name]: value }))
+    validateField(name, value)
   }
 
-  const handleSubmit = (callback) => (e) => {
-    e.preventDefault()
-    const validationErrors = validators[type](values)
-    setErrors(validationErrors)
-
-    if(Object.keys(validationErrors).length === 0) {
-      callback()
-    }
+  function validateAll() {
+    Object.entries(values).forEach(([name, value]) => {
+      validateField(name, value)
+    })
   }
 
-  return { values, errors, type, handleChange, handleSubmit }
+  return {
+    values,
+    errors,
+    handleChange,
+    validateAll
+  }
 }

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useState } from "react"
 // Navigasi
 import { useNavigate } from "react-router-dom"
 // Jwt
@@ -10,8 +10,8 @@ export const AuthContext = createContext()
 
 const decodeUser = (jwt) => {
   try {
-    const { id, email, fullname } = jwtDecode(jwt)
-    return { id, email, fullname }
+    const { id, email, fullname, role } = jwtDecode(jwt)
+    return { id, email, fullname, role }
   } catch (err) {
     console.error('Invalid token: ', err)
     return null
@@ -25,14 +25,20 @@ const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('userToken') || null)
   const navigate = useNavigate()
 
-  const saveToken = (jwt) => {
-    localStorage.setItem('userToken', jwt)
-    setToken(jwt)
-    const decoded = decodeUser(jwt)
-    if(decoded) setUser(decoded);
-  }
+  const saveToken = useCallback((jwt) => {
+    try {
+      localStorage.setItem('userToken', jwt)
+      setToken(jwt)
+      const decoded = decodeUser(jwt)
+      if(decoded) {
+        setUser(decoded)
+      }
+    } catch (err) {
+      console.error('Fail to save token: ', err)
+    }
+  }, [])
 
-  const requestOtpEmail = async (email) => {
+  const requestOtpEmail = useCallback(async (email) => {
     setLoading(true)
 
     try {
@@ -40,13 +46,14 @@ const AuthProvider = ({ children }) => {
 
       return res
     } catch (err) {
+      console.error('Error request otp email: ', err)
       throw err
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const verifyOtpEmail = async ({ email, otp }) => {
+  const verifyOtpEmail = useCallback(async ({ email, otp }) => {
     setLoading(true)
 
     try {
@@ -54,18 +61,19 @@ const AuthProvider = ({ children }) => {
 
       return res
     } catch (err) {
+      console.error('Error verify otp email: ', err)
       throw err
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const logoutFunc = async () => {
+  const logoutFunc = useCallback(() => {
     localStorage.removeItem('userToken')
     setUser(null)
     setToken(null)
-    navigate('/login')
-  }
+    navigate('/login', { replace: true })
+  }, [navigate])
 
   useEffect(() => {
     if (token) {
@@ -79,10 +87,10 @@ const AuthProvider = ({ children }) => {
     }
 
     setInitializing(false)
-  }, [token])
+  }, [token, logoutFunc])
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, initializing, requestOtpEmail, verifyOtpEmail, logoutFunc }}>
+    <AuthContext.Provider value={{ user, token, loading, initializing, saveToken, requestOtpEmail, verifyOtpEmail, logoutFunc }}>
       {children}
     </AuthContext.Provider>
   )
