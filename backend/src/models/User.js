@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('../config/database')
+const Interest = require('./Interest')
 
 const User = sequelize.define('User', {
     // profil utama
@@ -96,5 +97,8 @@ const User = sequelize.define('User', {
     tableName: 'users',
     paranoid: true
 })
+
+User.belongsToMany(Interest, { through: 'user_interests', as: 'interests' })
+Interest.belongsToMany(User, { through: 'user_interests', as: 'users' })
 
 module.exports = User
