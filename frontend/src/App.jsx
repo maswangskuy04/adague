@@ -2,6 +2,7 @@
 import { Route, Routes } from 'react-router-dom'
 // Pages
 import Home from './pages/user/Home'
+import Profile from './pages/user/Profile'
 import Dashboard from './pages/admin/Dashboard'
 import Unauthorized from './pages/UnauthorizedPage'
 import LoginMethod from './pages/auth/LoginMethod'
@@ -22,6 +23,7 @@ function App() {
       {/* User */}
       <Route element={<ProtectedRoute roles={['user']} />}>
         <Route path='/home' element={<Home />} />
+        <Route path='/profile' element={<Profile />} />
       </Route>
 
       {/* Admin */}

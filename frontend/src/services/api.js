@@ -27,6 +27,12 @@ API.interceptors.response.use(
             return Promise.reject(new Error('Gagal terhubung ke server, coba lagi nanti.'))
         }
 
+        // jika token expired atau invalid
+        if(err.response.status === 401) {
+            localStorage.removeItem('userToken')
+            window.location.href = '/login'
+        }
+
         return Promise.reject(new Error(err.response.data?.message))
     }
 )

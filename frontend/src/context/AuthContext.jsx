@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { jwtDecode } from 'jwt-decode'
 // Service
 import { reqOtpEmail, veryfOtpEmail } from "../services/auth"
+import { getMe } from "../services/user"
 
 export const AuthContext = createContext()
 
@@ -68,6 +69,12 @@ const AuthProvider = ({ children }) => {
     }
   }, [])
 
+  const loginWithToken = useCallback((token) => {
+    saveToken(token)
+    const { role } = decodeUser(token)
+    navigate(role === 'admin' ? '/admin/dashboard' : '/home', { replace: true })
+  }, [navigate, saveToken])
+
   const logoutFunc = useCallback(() => {
     localStorage.removeItem('userToken')
     setUser(null)
@@ -76,21 +83,27 @@ const AuthProvider = ({ children }) => {
   }, [navigate])
 
   useEffect(() => {
-    if (token) {
-      const decoded = decodeUser(token)
+    const fetchUser = async () => {
+      if (!token) {
+        setInitializing(false)
+        return
+      }
 
-      if(decoded) {
-        setUser(decoded)
-      } else {
-        logoutFunc()
+      try {
+        const res = await getMe()
+        setUser(res.user)
+      } catch (err) {
+        console.error('Error fetch user: ', err)
+      } finally {
+        setInitializing(false)
       }
     }
 
-    setInitializing(false)
+    fetchUser()
   }, [token, logoutFunc])
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, initializing, saveToken, requestOtpEmail, verifyOtpEmail, logoutFunc }}>
+    <AuthContext.Provider value={{ user, token, loading, initializing, saveToken, requestOtpEmail, verifyOtpEmail, loginWithToken, logoutFunc }}>
       {children}
     </AuthContext.Provider>
   )

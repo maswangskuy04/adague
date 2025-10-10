@@ -1,11 +1,11 @@
-import { useContext } from "react"
 // Context
-import { AuthContext } from "../context/AuthContext"
+import Lottie from "lottie-react"
+import { useAuth } from "../context/AuthContext"
 // Navigasi
 import { Navigate, Outlet } from "react-router-dom"
 
 const ProtectedRoute = ({ roles }) => {
-	const { user, initializing, token } = useContext(AuthContext)
+	const { user, initializing, token } = useAuth()
 
 	// Inisialisasi
 	if (initializing) return

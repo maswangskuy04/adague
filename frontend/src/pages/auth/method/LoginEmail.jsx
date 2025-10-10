@@ -13,7 +13,7 @@ import { useAlert } from "../../../context/AlertContext"
 import { useFormValidation } from "../../../hooks/useFormValidation"
 
 function LoginEmail() {
-  const { requestOtpEmail, verifyOtpEmail, loading } = useAuth()
+  const { requestOtpEmail, verifyOtpEmail, loading, loginWithToken } = useAuth()
   const { values, errors, handleChange, validateAll } = useFormValidation({ email: '' })
   const navigate = useNavigate()
   const [showOtpModal, setShowOtpModal] = useState(false)
@@ -44,6 +44,7 @@ function LoginEmail() {
   
       if(res.success) {
         alert.showAlert(res.message, 'success')
+        loginWithToken(res.token)
       } else {
         alert.showAlert(res.message, 'error')
         console.error(res.message)
