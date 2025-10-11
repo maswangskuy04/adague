@@ -10,6 +10,7 @@ import LoginEmail from './pages/auth/method/LoginEmail'
 import LoginPhone from './pages/auth/method/LoginPhone'
 // Routes
 import ProtectedRoute from './routes/ProtectedRoute'
+import Setting from './pages/user/Setting'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <Route element={<ProtectedRoute roles={['user']} />}>
         <Route path='/home' element={<Home />} />
         <Route path='/profile' element={<Profile />} />
+        <Route path='/settings' element={<Setting />} />
       </Route>
 
       {/* Admin */}

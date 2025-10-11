@@ -1,6 +1,7 @@
 // Component
 import Layout from "../../components/ui/Layout"
 import OnlineStatus from "../../components/ui/OnlineStatus"
+import EditProfileForm from "../../components/features/profile/EditProfileForm"
 // Navigasi
 import { Link } from "react-router-dom"
 // Icon
@@ -13,7 +14,7 @@ import { id } from 'date-fns/locale'
 import { useAuth } from "../../context/AuthContext"
 // React
 import { useRef, useState } from "react"
-import Modal from "../../components/ui/Modal"
+import PreviewAvatar from "../../components/features/profile/PreviewAvatar"
 
 function Profile() {
   const { user } = useAuth()
@@ -106,7 +107,7 @@ function Profile() {
             onClick={() => setIsOpenFormModal((prev) => !prev)}
           >
             <Edit3 size={14} />
-            Edit Profil
+            Edit Profile
           </motion.button>
         </motion.div>
 
@@ -206,7 +207,7 @@ function Profile() {
         >
           <h1 className="text-lg md:text-xl font-semibold text-slate-700">Interest</h1>
           <div className="flex flex-wrap gap-2">
-            {user?.interests?.lenght > 0 ? (
+            {user?.interests?.length > 0 ? (
               user?.interests.map((interest) => (
                 <span key={interest.id} className="px-3 py-1 text-xs md:text-sm bg-gradient-to-tl from-gray-400 to-gray-700 text-white font-medium rounded-full shadow-sm">
                   {interest.name}
@@ -224,20 +225,14 @@ function Profile() {
       {/* Modal Form Edit */}
       <AnimatePresence>
         {isOpenFormModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4"
-          >
-            <motion.div
-              ref={modal}
-              transition={{ duration: .2, ease: 'easeOut' }}
-              className="bg-white rounded-xl shadow-lg max-w-lg w-full relative"
-            >
-              {isOpenFormModal && <Modal />}
-            </motion.div>
-          </motion.div>
+          <EditProfileForm isOpen={isOpenFormModal} onClose={() => setIsOpenFormModal(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Modal Avatar */}
+      <AnimatePresence>
+        {avatarMenuOpen && (
+          <PreviewAvatar isOpen={avatarMenuOpen} onClose={() => setAvatarMenuOpen(false)} />
         )}
       </AnimatePresence>
     </Layout>
