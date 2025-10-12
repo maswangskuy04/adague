@@ -56,7 +56,7 @@ exports.verifyOtp = async (req, res) => {
         }
 
         // hapus OTP + verifikasi email
-        await user.update({ otp: null, otpExpires: null, emailVerified: true });
+        await user.update({ otp: null, otpExpires: null, emailVerified: true, isOnline: true });
 
         // generate token JWT
         const token = generateToken({ id: user.id, email: user.email, role: user.role })
@@ -74,5 +74,26 @@ exports.verifyOtp = async (req, res) => {
     } catch (err) {
         console.error('Verify otp error: ', err)
         return res.status(500).json({ success: false, message: 'Server error' })
+    }
+}
+
+exports.logout = async (req, res) => {
+    try {
+        const userId = req.user.id
+        const user = await User.findByPk(userId)
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' })
+        }
+
+        await user.update({
+            isOnline: false,
+            lastSeen: new Date()
+        })
+
+        return res.status(200).json({ success: true })
+    } catch (err) {
+        console.error('Logout error: ', err)
+        return res.status(500).json({ success: false, message : 'Server error' })
     }
 }
