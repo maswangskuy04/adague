@@ -1,16 +1,21 @@
 // Navigasi
 import { Route, Routes } from 'react-router-dom'
 // Pages
+// ==== Pages User =====
 import Home from './pages/user/Home'
 import Profile from './pages/user/Profile'
+import Setting from './pages/user/Setting'
+import ConnectedAccount from './pages/user/SettingPage/SubSettingPage/ConnectedAccount'
+import SecurityPrivacy from './pages/user/SettingPage/SubSettingPage/SecurityPrivacy'
+// ==== Pages Admin =====
 import Dashboard from './pages/admin/Dashboard'
-import Unauthorized from './pages/UnauthorizedPage'
+// Pages Login
 import LoginMethod from './pages/auth/LoginMethod'
 import LoginEmail from './pages/auth/method/LoginEmail'
 import LoginPhone from './pages/auth/method/LoginPhone'
+import Unauthorized from './pages/UnauthorizedPage'
 // Routes
 import ProtectedRoute from './routes/ProtectedRoute'
-import Setting from './pages/user/Setting'
 
 function App() {
   return (
@@ -26,6 +31,8 @@ function App() {
         <Route path='/home' element={<Home />} />
         <Route path='/profile' element={<Profile />} />
         <Route path='/settings' element={<Setting />} />
+        <Route path='/settings/security&privacy' element={<SecurityPrivacy />} />
+        <Route path='/settings/connected_account_social' element={<ConnectedAccount />} />
       </Route>
 
       {/* Admin */}

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 // Jwt
 import { jwtDecode } from 'jwt-decode'
 // Service
-import { reqOtpEmail, veryfOtpEmail } from "../services/auth"
+import { reqOtpEmail, veryfOtpEmail, logout } from "../services/auth"
 import { getMe } from "../services/user"
 
 export const AuthContext = createContext()
@@ -26,9 +26,12 @@ const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('userToken') || null)
   const navigate = useNavigate()
 
-  const saveToken = useCallback((jwt) => {
+  const saveToken = useCallback((jwt, sessionId) => {
     try {
       localStorage.setItem('userToken', jwt)
+      if(sessionId) {
+        localStorage.setItem('sessionId', sessionId)
+      }
       setToken(jwt)
       const decoded = decodeUser(jwt)
       if(decoded) {
@@ -69,17 +72,26 @@ const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  const loginWithToken = useCallback((token) => {
-    saveToken(token)
+  const loginWithToken = useCallback((token, sessionId) => {
+    saveToken(token, sessionId)
     const { role } = decodeUser(token)
     navigate(role === 'admin' ? '/admin/dashboard' : '/home', { replace: true })
   }, [navigate, saveToken])
 
-  const logoutFunc = useCallback(() => {
-    localStorage.removeItem('userToken')
-    setUser(null)
-    setToken(null)
-    navigate('/login', { replace: true })
+  const logoutFunc = useCallback(async () => {
+    try {
+      if (token) {
+        await logout({})
+      }
+    } catch (err) {
+      console.error('Logout error: ', err.message)
+    } finally {
+      localStorage.removeItem('userToken')
+      localStorage.removeItem('sessionId')
+      setUser(null)
+      setToken(null)
+      navigate('/login', { replace: true })
+    }
   }, [navigate])
 
   useEffect(() => {
@@ -103,7 +115,7 @@ const AuthProvider = ({ children }) => {
   }, [token, logoutFunc])
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, initializing, saveToken, requestOtpEmail, verifyOtpEmail, loginWithToken, logoutFunc }}>
+    <AuthContext.Provider value={{ user, setUser, token, loading, initializing, saveToken, requestOtpEmail, verifyOtpEmail, loginWithToken, logoutFunc }}>
       {children}
     </AuthContext.Provider>
   )

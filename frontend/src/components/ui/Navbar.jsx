@@ -1,7 +1,7 @@
 // Context
 import { useAuth } from "../../context/AuthContext"
 // React
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 // Utils
 import { getInitials } from "../../utils/initialsUser"
 // Library
@@ -10,6 +10,7 @@ import { LogOut, Menu, Settings, User } from "lucide-react"
 // API
 import { BASE_URL } from "../../services/api"
 import { Link } from "react-router-dom"
+// Hooks
 import useClickOutside from "../../hooks/useClickOutside"
 
 function Navbar() {
@@ -20,10 +21,22 @@ function Navbar() {
   const profileName = getInitials(user?.fullname)
 
   const menuItems = [
-    { label: 'Profil', icon: <User />, to: '/profile' },
-    { label: 'Pengaturan', icon: <Settings />, to: '/settings' },
-    { label: 'Keluar', icon: <LogOut />, action: logoutFunc, danger: true }
+    { label: 'Profile', icon: <User />, to: '/profile' },
+    { label: 'Settings', icon: <Settings />, to: '/settings' },
+    { label: 'Logout', icon: <LogOut />, action: logoutFunc, danger: true }
   ]
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   useClickOutside(menu, () => setIsOpen(false))
 

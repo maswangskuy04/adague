@@ -40,9 +40,9 @@ function Home() {
               transition={{ duration: .6, ease: 'easeOut' }}
               className="text-slate-600 text-lg md:text-xl leading-relaxed"
             >
-              Selamat datang di{" "}
+              Welcome to{" "}
               <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-yellow-500">AdaGue</span>{". "}
-              Tempat seru buat ngobrol, cari teman baru, dan bikin hari lebih menyenangkan.
+              A fun place to chat, make new friends, and make your day more enjoyable.
             </motion.p>
 
             {/* Button action Cari Partner */}
@@ -93,10 +93,10 @@ function Home() {
                     animate={{ opacity: [.3, 1, .3] }}
                     transition={{ repeat: Infinity, duration: 1.5 }}
                   >
-                    Mencari Teman...
+                    Looking for friends...
                   </motion.span>
                 ) : (
-                  <span>Cari Teman</span>
+                  <span>Find a friend</span>
                 )}
               </span>
 
@@ -117,7 +117,7 @@ function Home() {
               </div>
             ) : (
               <div className="mt-4 p-3 rounded-xl text-sm text-center font-semibold bg-amber-100 text-amber-800 border-b border-amber-300 shadow">
-                Kamu belum terhubung dengan siapapun. Klik tombol di atas yuk!
+                You haven't connected with anyone yet. Click the button above!
               </div>
             )}
           </div>
@@ -133,8 +133,8 @@ function Home() {
 
         {/* Card List User Active & User Registered */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <StatCard icon={<Users size={26} />} label='Pengguna Online' color='#006d77' />
-          <StatCard icon={<Globe size={26} />} label='Total Pengguna' color='#353535' />
+          <StatCard icon={<Users size={26} />} label='Online User' color='#006d77' />
+          <StatCard icon={<Globe size={26} />} label='Total Users' color='#353535' />
         </div>
       </div>
     </Layout>

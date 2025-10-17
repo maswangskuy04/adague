@@ -5,6 +5,6 @@ const { requestOtp, verifyOtp, logout } = require('../controllers/authController
 
 router.post('/request-otp', requestOtp)
 router.post('/verify-otp', verifyOtp)
-router.post('/logout', logout)
+router.post('/logout', verifyToken, logout)
 
 module.exports = router

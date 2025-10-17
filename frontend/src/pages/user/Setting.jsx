@@ -1,14 +1,13 @@
 // Component
 import Layout from "../../components/ui/Layout"
-import AccountInfo from "../../components/features/settings/AccountInfo"
-import NotificationSetting from "../../components/features/settings/NotificationSeting"
+import AccountInfo from "./SettingPage/AccountInfo"
+import NotificationSetting from "./SettingPage/NotificationSetting"
+import AppPreferences from "./SettingPage/AppPreferences"
+import AccountManagement from "./SettingPage/AccountManagement"
 // Navigasi
 import { Link } from "react-router-dom"
 // Library
-import { ArrowBigLeft, Dock, User, Lock, Bell, Brush, ArrowLeftRight, Trash } from "lucide-react"
-import { AnimatePresence, motion } from "framer-motion"
-import AppPreferences from "../../components/features/settings/AppPreferences"
-import AccountManagement from "../../components/features/settings/AccountManagement"
+import { ArrowBigLeft } from "lucide-react"
 
 function Setting() {
 

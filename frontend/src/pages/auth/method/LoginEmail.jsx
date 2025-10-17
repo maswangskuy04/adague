@@ -44,7 +44,7 @@ function LoginEmail() {
   
       if(res.success) {
         alert.showAlert(res.message, 'success')
-        loginWithToken(res.token)
+        loginWithToken(res.token, res.sessionId)
       } else {
         alert.showAlert(res.message, 'error')
         console.error(res.message)
@@ -67,6 +67,7 @@ function LoginEmail() {
         >
           <ArrowLeftSquare className="text-white" />
         </motion.button>
+        
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="block text-sm text-slate-300">Email</label>

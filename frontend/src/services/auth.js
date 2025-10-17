@@ -11,3 +11,9 @@ export const veryfOtpEmail = async ({email, otp}) => {
     
     return res.data
 }
+
+export const logout = async () => {
+    const res = await API.post('/auth/logout')
+
+    return res.data
+}

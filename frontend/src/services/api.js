@@ -30,6 +30,7 @@ API.interceptors.response.use(
         // jika token expired atau invalid
         if(err.response.status === 401) {
             localStorage.removeItem('userToken')
+            localStorage.removeItem('sessionId')
             window.location.href = '/login'
         }
 

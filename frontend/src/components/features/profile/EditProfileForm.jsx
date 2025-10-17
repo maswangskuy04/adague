@@ -6,8 +6,9 @@ import { useInterests } from "../../../hooks/useInterests"
 import { useAlert } from "../../../context/AlertContext"
 // React
 import { useEffect, useState } from "react"
+import { updateUser } from "../../../services/user"
 
-function EditProfileForm({ isOpen, onClose }) {
+function EditProfileForm({ isOpen, onClose, onSave }) {
   const { user } = useAuth()
   const { interests: allInterest, loading } = useInterests()
   const alert = useAlert()
@@ -41,12 +42,26 @@ function EditProfileForm({ isOpen, onClose }) {
     setFormData((prev) => ({ ...prev, interests: prev.interests.includes(id) ? prev.interests.filter((i) => i !== id) : [...prev.interests, id] }))
   }
 
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    try {
+      const res = await updateUser(formData)
+      alert.showAlert(res.message, 'success')
+      onSave?.(res.user)
+      onClose?.()
+    } catch (err) {
+      console.error(err.message)
+      alert.showAlert(err.message, 'error')
+    }
+  }
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col h-full space-y-4">
         <h2 className="text-lg md:text-xl font-semibold text-slate-700">Edit Profile</h2>
 
-        <form action="" className="flex-1 overflow-y-auto space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 p-2">
           <div>
             <label htmlFor="fullname" className="block text-sm font-medium text-slate-600">Fullname</label>
             <input type="text" id="fullname" name="fullname" value={formData.fullname} onChange={handleChange} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all" />

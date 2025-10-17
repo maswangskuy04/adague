@@ -3,6 +3,8 @@ const generateToken = require('../helpers/token')
 const { sendOtpToEmail } = require('../services/otpService')
 const { findUserByEmailOrPhone, createOtpObject } = require('../helpers/auth')
 // const { sendSmsOtp } = require('../services/smsService')
+const LoginHistory = require('../models/LoginHistory')
+const UAParser = require('ua-parser-js')
 
 exports.requestOtp = async (req, res) => {
     try {
@@ -61,10 +63,39 @@ exports.verifyOtp = async (req, res) => {
         // generate token JWT
         const token = generateToken({ id: user.id, email: user.email, role: user.role })
 
+        const parser = new UAParser(req.headers['user-agent'] || '')
+        const deviceInfo = parser.getDevice()
+        const deviceType = deviceInfo.type
+
+        const loginRecord = await LoginHistory.create({
+            userId: user.id,
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+            deviceType,
+            location: 'Unknown',
+            loggedInAt: new Date()
+        })
+
+        // batasi jumlah session aktif per user
+        const session_limit = 5
+
+        const sessions = await LoginHistory.findAll({
+            where: { userId: user.id },
+            order: [['loggedInAt', 'DESC']]
+        })
+
+        if (sessions.length > session_limit) {
+            const toDelete = sessions.slice(session_limit)
+            const idsToDelete = toDelete.map(s => s.id)
+
+            await LoginHistory.destroy({ where: { id: idsToDelete } })
+        }
+
         return res.json({
             success: true,
             message: 'OTP berhasil diverifikasi',
             token,
+            sessionId: loginRecord.sessionId,
             user: {
                 id: user.id,
                 email: user.email,

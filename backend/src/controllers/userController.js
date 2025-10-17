@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const Interest = require('../models/Interest');
 const User = require('../models/User');
 const { deleteAvatarFile } = require('../helpers/user');
+const LoginHistory = require('../models/LoginHistory');
 
 exports.getUser = async (req, res) => {
     try {
@@ -41,7 +42,7 @@ exports.getInterest = async (req, res) => {
 exports.updateUser = async (req, res) => {
     try {
         const userId = req.user.id
-        const { fullname, email, bio, interests } = req.body
+        const { fullname, username, email, bio, interests } = req.body
 
         if (email) {
             const existingUser = await User.findOne({
@@ -56,7 +57,7 @@ exports.updateUser = async (req, res) => {
             if (existingUser) return res.status(400).json({ success: false, message: 'Email sudah terdaftar' });
         }
 
-        await User.update({ fullname, ...(email && { email }), bio }, { where: { id: userId } })
+        await User.update({ fullname, username, ...(email && { email }), bio }, { where: { id: userId } })
 
         if (Array.isArray(interests)) {
             const user = await User.findByPk(userId)
@@ -158,6 +159,21 @@ exports.getAnonim = async (req, res) => {
         return res.status(200).json({ success: true, isAnonim: user.isAnonim })
     } catch (err) {
         console.error('Get anonim error: ', err)
+        return res.status(500).json({ success: false, message: 'Server error' })
+    }
+}
+
+exports.getLoginHistory = async (req, res) => {
+    try {
+        const history = await LoginHistory.findAll({
+            where: { userId: req.user.id },
+            order: [['loggedInAt', 'DESC']],
+            limit: 5
+        })
+    
+        res.json(history)
+    } catch (err) {
+        console.error('Get login history error: ', err)
         return res.status(500).json({ success: false, message: 'Server error' })
     }
 }
